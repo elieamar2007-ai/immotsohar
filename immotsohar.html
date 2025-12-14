@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>immoTsohar – Assistant Immobilier</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #chatbox {
+      width: 380px;
+      max-width: 95%;
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #header {
+      background: linear-gradient(135deg, #1c92d2, #0052d4);
+      color: white;
+      padding: 16px;
+      text-align: center;
+    }
+
+    #header h1 {
+      font-size: 18px;
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    #header p {
+      font-size: 12px;
+      margin: 4px 0 0;
+      opacity: 0.9;
+    }
+
+    #messages {
+      padding: 15px;
+      flex: 1;
+      overflow-y: auto;
+      background: #f7f9fb;
+    }
+
+    .msg {
+      margin: 10px 0;
+      line-height: 1.4;
+      font-size: 14px;
+    }
+
+    .bot {
+      background: #e9eef3;
+      padding: 10px 14px;
+      border-radius: 14px 14px 14px 4px;
+      max-width: 85%;
+      color: #333;
+    }
+
+    .user {
+      background: #1c92d2;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 14px 14px 4px 14px;
+      max-width: 85%;
+      margin-left: auto;
+      text-align: right;
+    }
+
+    #options {
+      padding: 12px;
+      background: #ffffff;
+      border-top: 1px solid #eee;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      flex: 1 1 45%;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #1c92d2, #0052d4);
+      color: white;
+      font-size: 13px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="chatbox">
+  <div id="header">
+    <h1>immoTsohar</h1>
+    <p>Assistant immobilier 24/7</p>
+  </div>
+  <div id="messages"></div>
+  <div id="options"></div>
+</div>
+
+<script>
+const messages = document.getElementById('messages');
+const options = document.getElementById('options');
+
+function bot(text) {
+  messages.innerHTML += `<div class='msg bot'>${text}</div>`;
+  messages.scrollTop = messages.scrollHeight;
+}
+function user(text) {
+  messages.innerHTML += `<div class='msg user'>${text}</div>`;
+  messages.scrollTop = messages.scrollHeight;
+}
+function clearOptions() { options.innerHTML = ''; }
+function addOption(text, next) {
+  const btn = document.createElement('button');
+  btn.innerText = text;
+  btn.onclick = () => { user(text); clearOptions(); next(); };
+  options.appendChild(btn);
+}
+
+function start() {
+  bot("Bonjour, je suis l'assistant immoTsohar. Comment puis-je vous aider aujourd’hui ?");
+  addOption("Acheter un bien", acheteur1);
+  addOption("Vendre un bien", vendeur1);
+  addOption("Informations", info);
+}
+
+// ACHETEUR
+function acheteur1() {
+  bot("Quel type de bien recherchez-vous ?");
+  addOption("Appartement", acheteur2);
+  addOption("Maison", acheteur2);
+  addOption("Terrain", acheteur2);
+}
+function acheteur2() {
+  bot("Quel est votre budget maximum ?");
+  addOption("Moins de 200 000 €", acheteur3);
+  addOption("200 000 – 400 000 €", acheteur3);
+  addOption("Plus de 400 000 €", acheteur3);
+}
+function acheteur3() {
+  bot("Dans quel délai souhaitez-vous acheter ?");
+  addOption("Immédiatement", rdv);
+  addOption("1 à 3 mois", rdv);
+  addOption("Plus tard", fin);
+}
+
+// VENDEUR
+function vendeur1() {
+  bot("Quel type de bien souhaitez-vous vendre ?");
+  addOption("Appartement", vendeur2);
+  addOption("Maison", vendeur2);
+  addOption("Terrain", vendeur2);
+}
+function vendeur2() {
+  bot("Souhaitez-vous bénéficier d’une estimation gratuite ?");
+  addOption("Oui", rdv);
+  addOption("Plus tard", fin);
+}
+
+// INFO
+function info() {
+  bot("Nos agents vous accompagnent pour l’achat, la vente et l’estimation de biens immobiliers.");
+  addOption("Parler à un agent", rdv);
+  addOption("Terminer", fin);
+}
+
+function rdv() {
+  bot("Parfait. Un agent immoTsohar vous contactera rapidement.");
+}
+function fin() {
+  bot("Merci pour votre visite. À bientôt chez immoTsohar.");
+}
+
+start();
+// === LEAD STORAGE ===
+let lead = {};
+
+function saveLead(key, value) {
+  lead[key] = value;
+}
+
+function sendLead() {
+  const subject = encodeURIComponent("Nouveau lead immoTsohar");
+  const body = encodeURIComponent(
+    "Nouveau contact via immoTsohar :\n\n" +
+    Object.entries(lead).map(([k,v]) => `${k} : ${v}`).join("\n")
+  );
+  window.location.href = `mailto:immotsohar@gmail.com?subject=${subject}&body=${body}`;
+}
+
+// ACHETEUR (avec collecte)
+function acheteur1() {
+  bot("Quel type de bien recherchez-vous ?");
+  addOption("Appartement", () => { saveLead('Type', 'Appartement'); acheteur2(); });
+  addOption("Maison", () => { saveLead('Type', 'Maison'); acheteur2(); });
+  addOption("Terrain", () => { saveLead('Type', 'Terrain'); acheteur2(); });
+}
+function acheteur2() {
+  bot("Quel est votre budget maximum ?");
+  addOption("Moins de 200 000 €", () => { saveLead('Budget', '<200k'); acheteur3(); });
+  addOption("200 000 – 400 000 €", () => { saveLead('Budget', '200-400k'); acheteur3(); });
+  addOption("Plus de 400 000 €", () => { saveLead('Budget', '>400k'); acheteur3(); });
+}
+function acheteur3() {
+  bot("Dans quel délai souhaitez-vous acheter ?");
+  addOption("Immédiatement", () => { saveLead('Délai', 'Immédiat'); rdv(); });
+  addOption("1 à 3 mois", () => { saveLead('Délai', '1-3 mois'); rdv(); });
+  addOption("Plus tard", fin);
+}
+
+// VENDEUR (avec collecte)
+function vendeur1() {
+  bot("Quel type de bien souhaitez-vous vendre ?");
+  addOption("Appartement", () => { saveLead('Type bien', 'Appartement'); vendeur2(); });
+  addOption("Maison", () => { saveLead('Type bien', 'Maison'); vendeur2(); });
+  addOption("Terrain", () => { saveLead('Type bien', 'Terrain'); vendeur2(); });
+}
+function vendeur2() {
+  bot("Souhaitez-vous bénéficier d’une estimation gratuite ?");
+  addOption("Oui", () => { saveLead('Demande', 'Estimation'); rdv(); });
+  addOption("Plus tard", fin);
+}
+
+// RDV
+function rdv() {
+  bot("Parfait. Vous pouvez réserver un créneau avec un agent immoTsohar.");
+  clearOptions();
+  const link = document.createElement('a');
+  link.href = "https://calendly.com/"; // à remplacer par le lien Google Calendar / Calendly
+  link.target = "_blank";
+  link.innerText = "📅 Prendre rendez-vous";
+  link.style.display = 'block';
+  link.style.margin = '10px';
+  link.style.color = '#0052d4';
+  options.appendChild(link);
+
+  sendLead();
+}
+
+</script>
+
+</body>
+</html>
